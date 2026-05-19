@@ -153,6 +153,33 @@ uv run python main.py "renewable energy technologies 2025"
 
 ---
 
+## MCP Server — Research Tools
+
+Researcher agents connect to a local **MCP (Model Context Protocol) server** that exposes tools they can call autonomously during reasoning.
+
+```
+researcher agent (claude haiku)
+    │
+    ├─ web_search("query 1")  ──→  MCP server  ──→  DuckDuckGo
+    ├─ web_search("query 2")  ──→  MCP server  ──→  DuckDuckGo
+    ├─ web_search("follow-up") ─→  MCP server  ──→  DuckDuckGo
+    │
+    └─ synthesizes findings into summary
+```
+
+| MCP Tool | What it does |
+|----------|-------------|
+| `web_search(query, max_results)` | DuckDuckGo search — agent calls autonomously |
+| `save_report(topic, content)` | Persist report to `.cache/research/` |
+| `get_cached(topic)` | Retrieve previously saved research |
+
+**Without MCP** (old): Python pre-fetches search results → passes as text to claude  
+**With MCP** (now): claude agent decides when/what to search during its own reasoning
+
+Config: `.claude/mcp_config.json` → `claude -p --mcp-config .claude/mcp_config.json`
+
+---
+
 ## Agent profiles
 
 Each agent runs with explicit skills and permissions (`claude_cli.py`):
