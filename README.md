@@ -3,6 +3,28 @@
 Multi-agent research system using the **Claude Code CLI** as the AI backend.  
 **No API key needed** — uses your existing Claude Code authentication.
 
+---
+
+## Zadání (Robot Dreams — Vibe Coding HW01)
+
+> Vytvořte projekt s praktickým použitím SDK pro kódovacích agentů. Cílem je, aby projekt demonstroval libovolnou orchestraci (workflow nebo multi-agent) a zároveň měl praktické použití.
+>
+> **Kódovací agent:** Claude Code CLI  
+> **Maximální počet bodů:** 100
+
+### Splněné požadavky
+
+| Požadavek | Řešení |
+|-----------|--------|
+| SDK kódovacího agenta | `claude -p` CLI (Claude Code) — bez API klíče |
+| Praktické použití | Výzkumný asistent: zadáš téma, dostaneš strukturovaný report |
+| Multi-agent: **Supervisor** | Claude Sonnet koordinuje celý pipeline |
+| Workflow: **Paralelní** | Research agenti (Claude Haiku) běží současně |
+| Workflow: **Conditional** | Supervisor vyhodnotí mezery → spustí follow-up agenty jen pokud jsou potřeba |
+| Workflow: **Sekvenční** | Plánování → výzkum → evaluace → syntéza |
+
+---
+
 ## Architecture
 
 ```
