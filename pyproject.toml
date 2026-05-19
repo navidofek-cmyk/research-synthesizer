@@ -1,0 +1,10 @@
+[project]
+name = "research-synthesizer"
+version = "0.1.0"
+description = "Multi-agent research synthesizer using Claude Supervisor pattern"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=0.40.0",
+    "duckduckgo-search>=6.0.0",
+    "rich>=13.0.0",
+]
