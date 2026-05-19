@@ -4,6 +4,6 @@ version = "0.1.0"
 description = "Multi-agent research synthesizer — claude CLI + DuckDuckGo, no API key"
 requires-python = ">=3.12"
 dependencies = [
-    "duckduckgo-search>=6.0.0",
+    "ddgs>=9.14.4",
     "rich>=13.0.0",
 ]

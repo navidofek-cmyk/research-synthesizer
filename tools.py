@@ -1,7 +1,7 @@
 """Web search tool implementation using DuckDuckGo (no API key required)."""
 
 import time
-from duckduckgo_search import DDGS
+from ddgs import DDGS
 
 TOOL_DEFINITION = {
     "name": "web_search",
