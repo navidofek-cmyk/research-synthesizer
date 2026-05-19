@@ -23,7 +23,7 @@ def generate_sub_topics(topic: str) -> list[str]:
         f"that together provide comprehensive coverage.\n\n"
         f"Return ONLY a valid JSON array of 4 strings. No explanation, no markdown."
     )
-    text = claude_cli.call(prompt)
+    text = claude_cli.call(prompt, agent="supervisor")
     start, end = text.find("["), text.rfind("]") + 1
     return json.loads(text[start:end])
 
@@ -63,7 +63,7 @@ def check_depth_gaps(topic: str, results: dict[str, str]) -> list[str]:
         f"Return ONLY a valid JSON array of strings (specific questions to research). "
         f"Maximum 2 items. No explanation."
     )
-    text = claude_cli.call(prompt)
+    text = claude_cli.call(prompt, agent="supervisor")
     start, end = text.find("["), text.rfind("]") + 1
     gaps = json.loads(text[start:end])
     return gaps[:2]
@@ -85,7 +85,7 @@ def synthesize(topic: str, all_research: dict[str, str]) -> str:
         f"4. **Conclusions & Implications**\n\n"
         f"Do not just list each section separately — synthesize across all research."
     )
-    return claude_cli.call(prompt, timeout=180)
+    return claude_cli.call(prompt, agent="supervisor", timeout=180)
 
 
 def run(

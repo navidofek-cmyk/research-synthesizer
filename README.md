@@ -153,6 +153,20 @@ uv run python main.py "renewable energy technologies 2025"
 
 ---
 
+## Agent profiles
+
+Each agent runs with explicit skills and permissions (`claude_cli.py`):
+
+| Agent | Model | Skills | Allowed tools |
+|-------|-------|--------|---------------|
+| **Supervisor** | Sonnet | Planning · decomposition · quality evaluation · synthesis | none (text-only) |
+| **Researcher** | Haiku | Web result analysis · fact extraction · concise summarization | none (web search handled externally) |
+
+Permissions follow the **principle of least privilege** — agents get only what they need.  
+Web search is executed in Python (DuckDuckGo), results are passed to the agent via prompt.
+
+---
+
 ## Tech stack
 
 | Component | Tool |

@@ -46,4 +46,4 @@ def research(sub_topic: str, main_topic: str) -> str:
         f"Be thorough, factual, and focused on this specific sub-topic."
     )
 
-    return claude_cli.call(prompt, model=claude_cli.RESEARCHER_MODEL, timeout=90)
+    return claude_cli.call(prompt, agent="researcher", timeout=90)
