@@ -74,11 +74,17 @@ def main() -> None:
     console.print(Markdown(result["report"]))
     console.print()
 
+    review = result.get("review", {})
+    score = review.get("score", "?")
+    approved = review.get("approved", True)
+    quality_line = f"Quality score:         {score}/10 {'✓' if approved else '→ revised'}"
+
     console.print(Panel(
         "\n".join([
             f"Sub-topics researched: {len(result['sub_topics'])}",
             f"Total agents used:     {len(result['research'])}",
             f"Follow-up gaps found:  {len(result['depth_gaps'])}",
+            quality_line,
         ]),
         title="[dim]Run summary[/dim]",
         border_style="dim",

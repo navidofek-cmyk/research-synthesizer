@@ -2,9 +2,10 @@
 Supervisor Agent — orchestrates parallel research agents via claude CLI.
 
 Patterns demonstrated:
-  Sequential  — planning → research → evaluation → synthesis pipeline
+  Sequential  — planning → research → evaluation → synthesis → review pipeline
   Parallel    — researcher agents run concurrently (ThreadPoolExecutor)
-  Conditional — depth-gap check decides whether follow-up agents are spawned
+  Conditional — depth-gap check and quality review decide extra steps
+  Loop        — supervisor reviews report and revises if quality insufficient
   Supervisor  — this module coordinates all sub-agents
 """
 
@@ -88,6 +89,42 @@ def synthesize(topic: str, all_research: dict[str, str]) -> str:
     return claude_cli.call(prompt, agent="supervisor", timeout=180)
 
 
+def review_report(topic: str, report: str) -> dict:
+    """
+    Supervisor quality review: reads the finished report and decides if it
+    needs revision. Returns {"approved": bool, "score": int, "feedback": str}.
+    Score 1-10. Reports scoring < 7 get a revision pass.
+    """
+    prompt = (
+        f"You are a senior editor reviewing a research report on: '{topic}'\n\n"
+        f"Report:\n{report[:6000]}\n\n"
+        f"Evaluate the report on:\n"
+        f"1. Completeness — are all key aspects covered?\n"
+        f"2. Accuracy — are claims well-supported and specific?\n"
+        f"3. Structure — is it clear and well-organized?\n"
+        f"4. Depth — does it go beyond surface-level facts?\n\n"
+        f"Return ONLY valid JSON with this exact structure:\n"
+        f'{{"approved": true/false, "score": 1-10, "feedback": "specific issues or OK"}}\n'
+        f"Approve (true) if score >= 7. No explanation outside the JSON."
+    )
+    text = claude_cli.call(prompt, agent="supervisor")
+    start, end = text.find("{"), text.rfind("}") + 1
+    return json.loads(text[start:end])
+
+
+def revise_report(topic: str, report: str, feedback: str) -> str:
+    """Supervisor revises the report based on review feedback."""
+    prompt = (
+        f"You are a senior research analyst. Revise the following report on '{topic}' "
+        f"based on this editorial feedback:\n\n"
+        f"**Feedback:** {feedback}\n\n"
+        f"**Original report:**\n{report}\n\n"
+        f"Produce an improved version that addresses the feedback. "
+        f"Keep the same Markdown structure. Return only the revised report."
+    )
+    return claude_cli.call(prompt, agent="supervisor", timeout=180)
+
+
 def run(
     topic: str,
     on_phase: Callable[[str], None] | None = None,
@@ -120,10 +157,26 @@ def run(
         on_phase("Supervisor: synthesizing final report")
     report = synthesize(topic, results)
 
+    if on_phase:
+        on_phase("Supervisor: quality review [loop]")
+    review = review_report(topic, report)
+    score = review.get("score", 10)
+    approved = review.get("approved", True)
+    feedback = review.get("feedback", "")
+
+    if not approved:
+        if on_phase:
+            on_phase(f"Quality score {score}/10 — revising report: {feedback[:80]}")
+        report = revise_report(topic, report, feedback)
+    else:
+        if on_phase:
+            on_phase(f"Quality score {score}/10 — report approved")
+
     return {
         "topic": topic,
         "sub_topics": sub_topics,
         "depth_gaps": gaps,
         "research": results,
         "report": report,
+        "review": review,
     }

@@ -11,6 +11,8 @@ def mock_call(prompt, agent="supervisor", timeout=120):
         return '["topic A", "topic B", "topic C", "topic D"]'
     if "gaps" in prompt or "knowledge gaps" in prompt:
         return '[]'
+    if "senior editor" in prompt or "Evaluate" in prompt:
+        return '{"approved": true, "score": 8, "feedback": "OK"}'
     return "Synthesized research report content."
 
 
@@ -54,6 +56,8 @@ def mock_call_with_gaps(prompt, agent="supervisor", timeout=120):
         return '["A", "B", "C", "D"]'
     if "gaps" in prompt or "knowledge gaps" in prompt:
         return '["follow-up question 1", "follow-up question 2"]'
+    if "senior editor" in prompt or "Evaluate" in prompt:
+        return '{"approved": true, "score": 8, "feedback": "OK"}'
     return "Final report."
 
 
@@ -66,3 +70,36 @@ def test_gaps_trigger_followup_agents(mock_research, mock_claude):
 
     assert len(result["depth_gaps"]) == 2
     assert mock_research.call_count == 6  # 4 initial + 2 follow-up
+
+
+def mock_call_low_quality(prompt, agent="supervisor", timeout=120):
+    if "Break" in prompt or "sub-topics" in prompt:
+        return '["A", "B", "C", "D"]'
+    if "gaps" in prompt or "knowledge gaps" in prompt:
+        return '[]'
+    if "senior editor" in prompt or "Evaluate" in prompt:
+        return '{"approved": false, "score": 5, "feedback": "Too superficial, needs more depth."}'
+    return "Draft report content."
+
+
+@patch("supervisor.claude_cli.call", side_effect=mock_call_low_quality)
+@patch("supervisor.research", return_value="Summary.")
+def test_low_quality_triggers_revision(mock_research, mock_claude):
+    from supervisor import run
+
+    result = run("test topic")
+
+    assert result["review"]["approved"] is False
+    assert result["review"]["score"] == 5
+
+
+@patch("supervisor.claude_cli.call", side_effect=mock_call)
+@patch("supervisor.research", return_value="Summary.")
+def test_review_included_in_result(mock_research, mock_claude):
+    from supervisor import run
+
+    result = run("test topic")
+
+    assert "review" in result
+    assert "score" in result["review"]
+    assert "approved" in result["review"]
