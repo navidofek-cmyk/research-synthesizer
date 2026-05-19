@@ -113,16 +113,22 @@ def review_report(topic: str, report: str) -> dict:
 
 
 def revise_report(topic: str, report: str, feedback: str) -> str:
-    """Supervisor revises the report based on review feedback."""
+    """
+    Supervisor adds a targeted revision addendum addressing the feedback.
+    Does not rewrite the full report — appends specific improvements only.
+    """
     prompt = (
-        f"You are a senior research analyst. Revise the following report on '{topic}' "
-        f"based on this editorial feedback:\n\n"
+        f"A research report on '{topic}' received this editorial feedback:\n\n"
         f"**Feedback:** {feedback}\n\n"
-        f"**Original report:**\n{report}\n\n"
-        f"Produce an improved version that addresses the feedback. "
-        f"Keep the same Markdown structure. Return only the revised report."
+        f"Write a concise **Editorial Revision** section in Markdown that:\n"
+        f"1. Directly addresses each point in the feedback\n"
+        f"2. Adds missing information or corrects weak areas\n"
+        f"3. Is self-contained (no need to read the original report)\n\n"
+        f"Start with: ## Editorial Revision\n"
+        f"Keep it focused — 3-5 paragraphs max."
     )
-    return claude_cli.call(prompt, agent="supervisor", timeout=180)
+    addendum = claude_cli.call(prompt, agent="supervisor", timeout=120)
+    return report + f"\n\n---\n\n{addendum}"
 
 
 def run(
